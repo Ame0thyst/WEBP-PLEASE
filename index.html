@@ -3,193 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Konversi ke WebP</title>
+<title>Kamar Gelap Digital — Konversi ke WebP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1c1a17;
-    --paper:#f6f3ec;
-    --line:#d8d2c4;
-    --accent:#3a6b5c;
-    --accent-soft:#e4ede9;
-    --mono: 'JetBrains Mono', 'Courier New', monospace;
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --ink:#0e0c09;
+    --panel:#1a1611;
+    --panel-2:#221c15;
+    --paper:#efe6d3;
+    --muted:#9c8f78;
+    --muted-dim:#6d6353;
+    --line:#332c21;
+    --line-soft:#241f18;
+    --safelight:#c2452c;
+    --safelight-soft:rgba(194,69,44,.14);
+    --safelight-dim:rgba(194,69,44,.35);
+    --brass:#b3915f;
+    --brass-dim:#7a6647;
+    --mono:'IBM Plex Mono', 'Courier New', monospace;
+    --sans:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --display:'Fraunces', Georgia, serif;
   }
   *{box-sizing:border-box;}
+  ::selection{background:var(--safelight-dim);color:var(--paper);}
+
   body{
     margin:0;
-    background:var(--paper);
-    color:var(--ink);
+    background:var(--ink);
+    color:var(--paper);
     font-family:var(--sans);
     min-height:100vh;
-    padding:48px 20px;
+    padding:64px 20px 80px;
+    position:relative;
+    overflow-x:hidden;
   }
-  .wrap{max-width:760px;margin:0 auto;}
-  header{margin-bottom:36px;}
-  .eyebrow{
+
+  /* ambient safelight glow + film grain */
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 900px 600px at 88% -8%, rgba(194,69,44,.16), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 8% 105%, rgba(179,145,95,.08), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    opacity:.05;
+    pointer-events:none;
+    z-index:0;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  .wrap{max-width:720px;margin:0 auto;position:relative;z-index:1;}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:44px;}
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    margin-bottom:22px;
+  }
+  .dot{
+    position:relative;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--safelight);
+    flex-shrink:0;
+  }
+  .dot::after{
+    content:'';
+    position:absolute;
+    inset:-5px;
+    border-radius:50%;
+    border:1px solid var(--safelight-dim);
+    animation:pulse-ring 2.4s ease-out infinite;
+  }
+  @keyframes pulse-ring{
+    0%{transform:scale(.6);opacity:.9;}
+    100%{transform:scale(1.9);opacity:0;}
+  }
+  .status-pill span{
     font-family:var(--mono);
-    font-size:12px;
-    letter-spacing:.14em;
+    font-size:10.5px;
+    letter-spacing:.16em;
     text-transform:uppercase;
-    color:var(--accent);
-    margin-bottom:10px;
+    color:var(--safelight);
   }
   h1{
-    font-size:clamp(28px,4vw,38px);
-    margin:0 0 8px;
-    letter-spacing:-0.02em;
-    font-weight:700;
+    font-family:var(--display);
+    font-size:clamp(36px,6vw,52px);
+    line-height:.98;
+    letter-spacing:-.01em;
+    font-weight:500;
+    margin:0 0 6px;
+    color:var(--paper);
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:400;
+    color:var(--muted);
   }
   p.sub{
-    margin:0;
-    color:#5a564d;
+    margin:16px 0 0;
+    color:var(--muted);
     font-size:15px;
-    line-height:1.5;
-    max-width:52ch;
+    line-height:1.65;
+    max-width:48ch;
   }
 
+  /* ---------- dropzone ---------- */
   .dropzone{
+    position:relative;
     border:1.5px dashed var(--line);
-    border-radius:10px;
-    background:#fff;
-    padding:40px 24px;
+    border-radius:6px;
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    padding:52px 24px 44px;
     text-align:center;
     cursor:pointer;
-    transition:border-color .15s ease, background .15s ease;
-    margin-bottom:24px;
+    transition:border-color .2s ease, background .2s ease, box-shadow .3s ease;
+    margin:36px 0 20px;
   }
+  .dropzone::before,.dropzone::after{
+    content:'';
+    position:absolute;
+    top:0;
+    width:22px;height:9px;
+    background:var(--ink);
+    border:1px solid var(--line);
+    border-top:none;
+    border-radius:0 0 4px 4px;
+  }
+  .dropzone::before{left:28px;}
+  .dropzone::after{right:28px;}
+  .dropzone:hover{border-color:var(--brass-dim);}
   .dropzone.drag{
-    border-color:var(--accent);
-    background:var(--accent-soft);
+    border-color:var(--safelight);
+    background:linear-gradient(180deg, var(--safelight-soft), var(--panel-2));
+    box-shadow:0 0 0 1px var(--safelight-dim), 0 0 40px -10px var(--safelight-dim);
   }
-  .dropzone strong{display:block;font-size:15px;margin-bottom:4px;}
-  .dropzone span{font-size:13px;color:#7a756a;}
+  .aperture{
+    width:34px;height:34px;
+    margin:0 auto 16px;
+    color:var(--brass);
+    opacity:.85;
+  }
+  .dropzone strong{
+    display:block;
+    font-family:var(--display);
+    font-size:18px;
+    font-weight:500;
+    color:var(--paper);
+    margin-bottom:6px;
+  }
+  .dropzone span{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.03em;
+    color:var(--muted-dim);
+  }
   input[type=file]{display:none;}
 
+  /* ---------- controls ---------- */
   .controls{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:2px solid var(--brass-dim);
+    border-radius:6px;
+    padding:22px 22px 20px;
+    margin-bottom:8px;
+  }
+  .control-row{
     display:flex;
     align-items:center;
-    gap:16px;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:16px 20px;
-    margin-bottom:24px;
+    gap:18px;
     flex-wrap:wrap;
   }
-  .controls label{
-    font-size:13px;
+  .control-row + .control-row{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid var(--line-soft);
+  }
+  .field-label{
     font-family:var(--mono);
-    color:#5a564d;
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted-dim);
+    flex:0 0 auto;
+    width:118px;
+  }
+
+  input[type=range]{
+    -webkit-appearance:none;
+    appearance:none;
+    flex:1;
+    min-width:110px;
+    height:2px;
+    background:var(--line);
+    border-radius:2px;
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:15px;height:15px;
+    border-radius:50%;
+    background:var(--brass);
+    border:2px solid var(--ink);
+    box-shadow:0 0 0 1px var(--brass-dim);
+    cursor:pointer;
+    transition:box-shadow .15s ease;
+  }
+  input[type=range]:active::-webkit-slider-thumb{
+    background:var(--safelight);
+    box-shadow:0 0 0 4px var(--safelight-soft);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;
+    border-radius:50%;
+    background:var(--brass);
+    border:2px solid var(--ink);
+    cursor:pointer;
+  }
+  input[type=range]:disabled{opacity:.35;}
+
+  .quality-val{
+    font-family:var(--mono);
+    font-variant-numeric:tabular-nums;
+    color:var(--paper);
+    font-weight:600;
+    font-size:13px;
+    width:32px;
+    text-align:right;
+    flex:0 0 auto;
+  }
+  .quality-val::after{content:'%';color:var(--muted-dim);font-weight:400;}
+
+  /* toggle switch */
+  .toggle-row{
     display:flex;
     align-items:center;
-    gap:10px;
-    flex:1;
-    min-width:200px;
+    gap:12px;
+    cursor:pointer;
+    user-select:none;
   }
-  input[type=range]{flex:1;accent-color:var(--accent);}
-  .quality-val{
-    font-variant-numeric:tabular-nums;
-    color:var(--ink);
-    font-weight:600;
-    width:38px;
-    text-align:right;
+  .toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+  .toggle-switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;}
+  .toggle-track{
+    position:absolute;inset:0;
+    background:var(--line);
+    border-radius:999px;
+    transition:background .18s ease;
   }
+  .toggle-thumb{
+    position:absolute;
+    top:2px;left:2px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--muted);
+    transition:transform .18s ease, background .18s ease;
+  }
+  .toggle-switch input:checked ~ .toggle-track{background:var(--safelight-dim);}
+  .toggle-switch input:checked ~ .toggle-track .toggle-thumb{
+    transform:translateX(16px);
+    background:var(--safelight);
+  }
+  .toggle-text{
+    font-family:var(--sans);
+    font-size:13.5px;
+    color:var(--paper);
+  }
+  .toggle-text em{font-style:normal;color:var(--muted-dim);font-size:12px;}
+
   button.action{
-    background:var(--accent);
-    color:#fff;
+    background:var(--safelight);
+    color:var(--paper);
     border:none;
-    padding:11px 18px;
-    border-radius:7px;
-    font-size:13px;
+    padding:13px 20px;
+    border-radius:5px;
+    font-size:12.5px;
     font-family:var(--mono);
     font-weight:600;
+    letter-spacing:.03em;
     cursor:pointer;
     white-space:nowrap;
+    margin-left:auto;
+    transition:filter .15s ease, transform .1s ease;
   }
-  button.action:hover{opacity:.9;}
-  button.action:disabled{background:#c8c3b6;cursor:not-allowed;}
+  button.action:hover:not(:disabled){filter:brightness(1.12);}
+  button.action:active:not(:disabled){transform:translateY(1px);}
+  button.action:disabled{background:var(--line);color:var(--muted-dim);cursor:not-allowed;}
 
-  .list{display:flex;flex-direction:column;gap:10px;}
+  #losslessNote{
+    display:none;
+    font-family:var(--mono);
+    font-size:11.5px;
+    line-height:1.6;
+    color:var(--muted-dim);
+    margin:14px 0 0;
+    padding-top:14px;
+    border-top:1px solid var(--line-soft);
+  }
+
+  /* ---------- contact sheet / list ---------- */
+  .list-heading{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin:36px 0 12px;
+  }
+  .list-heading h2{
+    font-family:var(--display);
+    font-size:15px;
+    font-weight:500;
+    color:var(--muted);
+    margin:0;
+    font-style:italic;
+  }
+  .list{display:flex;flex-direction:column;gap:1px;background:var(--line-soft);border-radius:6px;overflow:hidden;border:1px solid var(--line);}
   .item{
     display:flex;
     align-items:center;
     gap:14px;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:12px 14px;
+    background:var(--panel);
+    padding:12px 16px 12px 10px;
+    position:relative;
+  }
+  .item::before{
+    content:'';
+    align-self:stretch;
+    width:6px;
+    flex-shrink:0;
+    background-image:radial-gradient(circle, var(--brass-dim) 1px, transparent 1px);
+    background-size:100% 9px;
+    background-position:center;
+    opacity:.7;
   }
   .item img{
-    width:52px;height:52px;object-fit:cover;border-radius:6px;
+    width:48px;height:48px;object-fit:cover;border-radius:4px;
     border:1px solid var(--line);
     flex-shrink:0;
+    filter:saturate(.92);
   }
   .item .meta{flex:1;min-width:0;}
   .item .name{
+    font-family:var(--sans);
     font-size:13.5px;
-    font-weight:600;
+    font-weight:500;
+    color:var(--paper);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
   .item .sizes{
     font-family:var(--mono);
-    font-size:11.5px;
-    color:#7a756a;
-    margin-top:2px;
+    font-size:11px;
+    color:var(--muted-dim);
+    margin-top:3px;
   }
-  .item .sizes .down{color:var(--accent);font-weight:700;}
+  .item .sizes .down{color:var(--safelight);font-weight:600;}
   .item .dl{
     font-family:var(--mono);
-    font-size:12px;
-    color:var(--accent);
+    font-size:11.5px;
+    color:var(--paper);
     text-decoration:none;
-    border:1px solid var(--accent);
-    padding:7px 12px;
-    border-radius:6px;
+    border:1px solid var(--brass-dim);
+    padding:7px 13px;
+    border-radius:4px;
     flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease;
   }
-  .item .dl:hover{background:var(--accent-soft);}
+  .item .dl:hover{background:var(--safelight-soft);border-color:var(--safelight);}
   .item .status{
     font-family:var(--mono);
-    font-size:11.5px;
-    color:#a39c8b;
+    font-size:11px;
+    color:var(--muted-dim);
     flex-shrink:0;
+    animation:flicker 1.6s ease-in-out infinite;
   }
+  @keyframes flicker{0%,100%{opacity:.55;}50%{opacity:1;}}
 
   .empty{
     text-align:center;
-    color:#a39c8b;
-    font-size:13px;
+    color:var(--muted-dim);
+    font-size:12.5px;
     font-family:var(--mono);
-    padding:20px 0;
+    padding:30px 0;
+    letter-spacing:.02em;
+  }
+
+  footer{
+    margin-top:48px;
+    padding-top:20px;
+    border-top:1px solid var(--line-soft);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  footer span{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.06em;
+    color:var(--muted-dim);
+  }
+
+  a:focus-visible, button:focus-visible, .dropzone:focus-visible, input:focus-visible{
+    outline:1.5px solid var(--safelight);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .dot::after, .item .status{animation:none;}
+  }
+
+  @media (max-width:560px){
+    .field-label{width:auto;}
+    button.action{margin-left:0;width:100%;}
+    .control-row{flex-direction:column;align-items:stretch;}
   }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Alat Konversi Gambar</div>
-    <h1>JPG / PNG → WebP</h1>
-    <p class="sub">Seret gambar ke bawah ini atau pilih file. Semua proses konversi berjalan langsung di browser kamu — tidak ada file yang diunggah ke server mana pun.</p>
+    <div class="status-pill">
+      <span class="dot"></span>
+      <span>Proses lokal — tanpa unggah ke server</span>
+    </div>
+    <h1>Kamar Gelap<br><em>Digital</em></h1>
+    <p class="sub">Ubah JPG dan PNG menjadi WebP langsung di browser kamu. Seret gambar ke meja cahaya di bawah, atur kompresi seperti mengatur exposure — negatifmu tidak pernah meninggalkan ruangan.</p>
   </header>
 
-  <div class="dropzone" id="dropzone">
+  <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih atau seret file gambar">
+    <svg class="aperture" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="1.3" opacity=".5"/>
+      <path d="M24 8L31 20H17L24 8Z" fill="currentColor" opacity=".85"/>
+      <path d="M40 24L28 31V17L40 24Z" fill="currentColor" opacity=".85"/>
+      <path d="M24 40L17 28H31L24 40Z" fill="currentColor" opacity=".85"/>
+      <path d="M8 24L20 17V31L8 24Z" fill="currentColor" opacity=".85"/>
+      <circle cx="24" cy="24" r="6" fill="var(--panel)" stroke="currentColor" stroke-width="1.3"/>
+    </svg>
     <strong>Klik atau seret file ke sini</strong>
-    <span>Mendukung .jpg, .jpeg, dan .png — bisa lebih dari satu file sekaligus</span>
+    <span>.JPG · .JPEG · .PNG — BANYAK FILE SEKALIGUS</span>
     <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,image/jpeg,image/png" multiple>
   </div>
 
   <div class="controls">
-    <label>
-      Kualitas WebP
+    <div class="control-row">
+      <span class="field-label">Exposure</span>
       <input type="range" id="quality" min="1" max="100" value="80">
       <span class="quality-val" id="qualityVal">80</span>
-    </label>
-    <button class="action" id="downloadAll" disabled>Unduh Semua (.zip)</button>
+    </div>
+    <div class="control-row">
+      <label class="toggle-row" for="lossless">
+        <span class="toggle-switch">
+          <input type="checkbox" id="lossless">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </span>
+        <span class="toggle-text">Lossless <em>— tanpa kehilangan data</em></span>
+      </label>
+      <button class="action" id="downloadAll" disabled>Unduh Semua (.zip)</button>
+    </div>
+    <p id="losslessNote">Mode lossless memakai encoder WebP terpisah (dimuat dari CDN saat pertama dipakai) dan butuh koneksi internet. Ukuran hasil akan lebih besar dari mode kualitas biasa, tapi tidak ada detail piksel yang dibuang.</p>
   </div>
 
+  <div class="list-heading">
+    <h2>Contact sheet</h2>
+  </div>
   <div class="list" id="list">
     <div class="empty" id="emptyMsg">Belum ada file yang ditambahkan.</div>
   </div>
+
+  <footer>
+    <span>KAMAR GELAP DIGITAL</span>
+    <span>SEMUA KONVERSI BERJALAN DI BROWSER ANDA</span>
+  </footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -201,14 +495,33 @@ const emptyMsg = document.getElementById('emptyMsg');
 const qualitySlider = document.getElementById('quality');
 const qualityVal = document.getElementById('qualityVal');
 const downloadAllBtn = document.getElementById('downloadAll');
+const losslessCheckbox = document.getElementById('lossless');
+const losslessNote = document.getElementById('losslessNote');
 
 let items = []; // {id, name, originalSize, blob, webpSize, url}
+let jsquashEncode = null; // lazy-loaded lossless encoder
 
 qualitySlider.addEventListener('input', () => {
   qualityVal.textContent = qualitySlider.value;
 });
 
+losslessCheckbox.addEventListener('change', () => {
+  qualitySlider.disabled = losslessCheckbox.checked;
+  losslessNote.style.display = losslessCheckbox.checked ? 'block' : 'none';
+});
+
+// Muat encoder WebP lossless (libwebp lewat WASM) hanya saat pertama dibutuhkan
+async function getLosslessEncoder() {
+  if (jsquashEncode) return jsquashEncode;
+  const mod = await import('https://esm.sh/@jsquash/webp@1.4.0');
+  jsquashEncode = mod.encode || mod.default;
+  return jsquashEncode;
+}
+
 dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+});
 dropzone.addEventListener('dragover', e => {
   e.preventDefault();
   dropzone.classList.add('drag');
@@ -252,10 +565,34 @@ function processFile(file) {
   `;
   list.appendChild(row);
 
+  function finalize(blob, tag) {
+    if (!blob) {
+      row.querySelector('.status').textContent = 'gagal — browser tidak mendukung WebP';
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const newName = file.name.replace(/\.(jpe?g|png)$/i, '.webp');
+    const reduction = Math.round((1 - blob.size / file.size) * 100);
+
+    row.querySelector('.meta').innerHTML = `
+      <div class="name">${newName}</div>
+      <div class="sizes">${formatSize(file.size)} → <span class="down">${formatSize(blob.size)}</span> ${reduction > 0 ? `(-${reduction}%)` : ''} ${tag ? `· ${tag}` : ''}</div>
+    `;
+    const dl = document.createElement('a');
+    dl.href = url;
+    dl.download = newName;
+    dl.className = 'dl';
+    dl.textContent = 'Unduh';
+    row.appendChild(dl);
+
+    items.push({ id, name: newName, blob });
+    downloadAllBtn.disabled = false;
+  }
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       row.querySelector('img').src = e.target.result;
 
       const canvas = document.createElement('canvas');
@@ -264,30 +601,22 @@ function processFile(file) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
 
-      const q = qualitySlider.value / 100;
-      canvas.toBlob(blob => {
-        if (!blob) {
-          row.querySelector('.status').textContent = 'gagal — browser tidak mendukung WebP';
-          return;
+      const useLossless = losslessCheckbox.checked;
+
+      if (useLossless) {
+        try {
+          const encode = await getLosslessEncoder();
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const buffer = await encode(imageData, { lossless: 1 });
+          finalize(new Blob([buffer], { type: 'image/webp' }), 'lossless');
+        } catch (err) {
+          row.querySelector('.status').textContent = 'encoder lossless gagal dimuat, memakai kualitas 100 sebagai gantinya';
+          canvas.toBlob(blob => finalize(blob, 'fallback kualitas 100'), 'image/webp', 1);
         }
-        const url = URL.createObjectURL(blob);
-        const newName = file.name.replace(/\.(jpe?g|png)$/i, '.webp');
-        const reduction = Math.round((1 - blob.size / file.size) * 100);
-
-        row.querySelector('.meta').innerHTML = `
-          <div class="name">${newName}</div>
-          <div class="sizes">${formatSize(file.size)} → <span class="down">${formatSize(blob.size)}</span> ${reduction > 0 ? `(-${reduction}%)` : ''}</div>
-        `;
-        const dl = document.createElement('a');
-        dl.href = url;
-        dl.download = newName;
-        dl.className = 'dl';
-        dl.textContent = 'Unduh';
-        row.appendChild(dl);
-
-        items.push({ id, name: newName, blob });
-        downloadAllBtn.disabled = false;
-      }, 'image/webp', q);
+      } else {
+        const q = qualitySlider.value / 100;
+        canvas.toBlob(blob => finalize(blob), 'image/webp', q);
+      }
     };
     img.src = e.target.result;
   };
