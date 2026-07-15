@@ -1,6 +1,6 @@
 # 🎞️ Kamar Gelap Digital
 
-![Tangkapan Layar Kamar Gelap Digital](./doc/Doc_1.png)
+![Tangkapan Layar Kamar Gelap Digital](./doc/Docs_1.png)
 
 **Kamar Gelap Digital** adalah aplikasi berbasis web untuk mengubah gambar berformat JPG dan PNG menjadi WebP secara instan. Semua proses dilakukan secara **lokal di dalam browser** (Client-side), sehingga privasi data terjamin—file gambar tidak pernah diunggah ke server mana pun.
 
